@@ -15,43 +15,166 @@
     <div id="out"></div>
   </body>
   <script>
-    var ul = document.getElementById('result'); var div =
-    document.getElementById('out'); var omiDiv = document.getElementById('omi'); var
-    g_cmtMap = new Map(); var g_linkSet = new Set();
-    document.getElementById('go').addEventListener('click', gogogo); function
-    gogogo() { div.innerHTML = ''; omiDiv.innerHTML = ''; g_cmtMap.clear();
-    g_linkSet.clear(); const url = document.getElementById('url').value; idIdx =
-    url.indexOf('@'); idLastIdx = url.indexOf('/', idIdx); id = url.substring(idIdx
-    + 1, idLastIdx); plIdx = url.lastIndexOf('/'); pl = url.substring(plIdx + 1);
-    //omiDiv.innerHTML = pl; getJjangJjangman(id, pl); } function
-    getJjangJjangman(id, permlink) { steem.api.getContentReplies(id, permlink,
-    function( err, result ) { if (err != null) { return; } for (var i = 0; i <
-    result.length; ++i) { let cmt = result[i]; if (cmt.author.length <= 0 ||
-    cmt.author == null || cmt.author == '') { continue; } g_cmtMap.set(cmt.author,
-    cmt.body); link = ''; console.log('--' + cmt.json_metadata + '--'); if
-    (cmt.json_metadata == undefined || cmt.json_metadata == null ||
-    cmt.json_metadata == '') { link = noLink(cmt.body) } else { let jm =
-    JSON.parse(cmt.json_metadata); if (jm.links != undefined && jm.links.length > 0)
-    { link = jm.links[0]; } else { link = noLink(cmt.body) } } if (link == '') {
-    continue; } index = link.lastIndexOf('/'); pl = link.substring(index + 1);
-    getPost(cmt.author, pl); } }); processOmi() } function noLink(body) { idxhttp =
-    body.indexOf('https://'); if (idxhttp < 0) { return ''; } endIdx =
-    body.indexOf('\n', idxhttp); if (endIdx < 0) { endIdx = body.indexOf(' ',
-    idxhttp); } if(endIdx < 0) { return body.substring(idxhttp); } return
-    body.substring(idxhttp, endIdx); } function getPost(author, permlink) {
-    steem.api.getContent(author, permlink, function (err, result) { if
-    (result.root_title == '') { return; } g_linkSet.add(result.author); title =
-    replaceAll(result.root_title, "|", ""); txt = genText(author, title, result.url)
-    div.innerHTML += txt; }); } function genText(author, title, url) { txt = ''; txt
-    += '| @' txt += author; txt += ' | ['; txt += title; txt += ']('; txt += url;
-    txt += ') |'; txt += '<br />'; return txt; } function processOmi() {
-    setTimeout(function() { var omissionMember = ''; g_cmtMap.forEach((body, key) =>
-    { if (g_linkSet.has(key) == false) { omissionMember += '@' + key; omissionMember
-    += ' - ' + body; omissionMember += '<br />'; } }); /* for (let item of g_cmtSet)
-    { if (g_linkSet.has(item) == false) { if (omissionMember != '') { omissionMember
-    += ', '; } omissionMember += '@' + item; } } */ if(omissionMember == '') {
-    omissionMember = '누락된 사용자가 없습니다.'; } omiDiv.innerHTML =
-    omissionMember; }, 10000); } function replaceAll(str, searchStr, replaceStr) {
-    return str.split(searchStr).join(replaceStr); }
+    var ul = document.getElementById('result');
+    var div = document.getElementById('out');
+    var omiDiv = document.getElementById('omi');
+
+    var g_cmtMap = new Map();
+    var g_linkSet = new Set();
+
+    document.getElementById('go').addEventListener('click', gogogo);
+
+    function gogogo() {
+      div.innerHTML = '';
+      omiDiv.innerHTML = '';
+      g_cmtMap.clear();
+      g_linkSet.clear();
+
+      const url = document.getElementById('url').value;
+
+      idIdx = url.indexOf('@');
+      idLastIdx = url.indexOf('/', idIdx);
+
+      id = url.substring(idIdx + 1, idLastIdx);
+
+      plIdx = url.lastIndexOf('/');
+
+      pl = url.substring(plIdx + 1);
+
+      //omiDiv.innerHTML = pl;
+      getJjangJjangman(id, pl);
+    }
+
+    function getJjangJjangman(id, permlink) {
+      steem.api.getContentReplies(id, permlink, function(err, result) {
+        if (err != null) {
+          return;
+        }
+
+        for (var i = 0; i < result.length; ++i) {
+          let cmt = result[i];
+
+          if (
+            cmt.author.length <= 0 ||
+            cmt.author == null ||
+            cmt.author == ''
+          ) {
+            continue;
+          }
+
+          g_cmtMap.set(cmt.author, cmt.body);
+          link = '';
+          console.log('--' + cmt.json_metadata + '--');
+          if (
+            cmt.json_metadata == undefined ||
+            cmt.json_metadata == null ||
+            cmt.json_metadata == ''
+          ) {
+            link = noLink(cmt.body);
+          } else {
+            let jm = JSON.parse(cmt.json_metadata);
+
+            if (jm.links != undefined && jm.links.length > 0) {
+              link = jm.links[0];
+            } else {
+              link = noLink(cmt.body);
+            }
+          }
+
+          if (link == '') {
+            continue;
+          }
+
+          index = link.lastIndexOf('/');
+          pl = link.substring(index + 1);
+
+          getPost(cmt.author, pl);
+        }
+      });
+
+      processOmi();
+    }
+
+    function noLink(body) {
+      idxhttp = body.indexOf('https://');
+
+      if (idxhttp < 0) {
+        return '';
+      }
+
+      endIdx = body.indexOf('\n', idxhttp);
+      if (endIdx < 0) {
+        endIdx = body.indexOf(' ', idxhttp);
+      }
+      if (endIdx < 0) {
+        return body.substring(idxhttp);
+      }
+      return body.substring(idxhttp, endIdx);
+    }
+
+    function getPost(author, permlink) {
+      steem.api.getContent(author, permlink, function(err, result) {
+        if (result.root_title == '') {
+          return;
+        }
+
+        g_linkSet.add(result.author);
+
+        title = replaceAll(result.root_title, '|', '');
+
+        txt = genText(author, title, result.url);
+        div.innerHTML += txt;
+      });
+    }
+
+    function genText(author, title, url) {
+      txt = '';
+      txt += '| @';
+      txt += author;
+      txt += ' | [';
+      txt += title;
+      txt += '](';
+      txt += url;
+      txt += ') |';
+      txt += '<br/>';
+      return txt;
+    }
+
+    function processOmi() {
+      setTimeout(function() {
+        var omissionMember = '';
+
+        g_cmtMap.forEach((body, key) => {
+          if (g_linkSet.has(key) == false) {
+            omissionMember += '@' + key;
+            omissionMember += ' - ' + body;
+            omissionMember += '<br/>';
+          }
+        });
+
+        /*  for (let item of g_cmtSet) {
+    
+      if (g_linkSet.has(item) == false) {
+    
+        if (omissionMember != '') {
+          omissionMember += ', ';
+        }
+    
+        omissionMember += '@' + item;
+      }
+    
+    } */
+
+        if (omissionMember == '') {
+          omissionMember = '누락된 사용자가 없습니다.';
+        }
+
+        omiDiv.innerHTML = omissionMember;
+      }, 10000);
+    }
+
+    function replaceAll(str, searchStr, replaceStr) {
+      return str.split(searchStr).join(replaceStr);
+    }
   </script>
 </html>
