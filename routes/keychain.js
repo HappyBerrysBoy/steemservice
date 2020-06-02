@@ -4,8 +4,21 @@ const steem = require("steem");
 const axios = require("axios");
 
 const rpcUrl = "https://api.steemit.com";
+let lastInquiryDate;
+let lastWitnessData;
+const INQUIRY_GAP = 10 * 60 * 1000; // 10 분
 
 router.get("/witnesses", function (req, res, next) {
+  const currDate = +new Date();
+  if (
+    lastWitnessData &&
+    lastInquiryDate &&
+    lastInquiryDate + INQUIRY_GAP > currDate
+  ) {
+    console.log("return cached data");
+    return res.json(lastWitnessData);
+  }
+
   // 증인 리스트 가져오기
   const params = {
     jsonrpc: "2.0",
@@ -28,7 +41,9 @@ router.get("/witnesses", function (req, res, next) {
       });
     });
 
-    // console.log(list);
+    lastInquiryDate = currDate;
+    lastWitnessData = list;
+    console.log("return inquiry data");
     res.json(list);
   });
 });
