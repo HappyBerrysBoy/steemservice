@@ -27,25 +27,31 @@ router.get("/witnesses", function (req, res, next) {
     id: 1,
   };
 
-  axios.post(rpcUrl, params).then((r) => {
-    if (!r.data.result.length) return;
+  axios
+    .post(rpcUrl, params)
+    .then((r) => {
+      if (!r.data.result.length) return;
 
-    const list = [];
+      const list = [];
 
-    r.data.result.forEach((d, idx) => {
-      list.push({
-        name: d.owner,
-        rank: idx + 1,
-        votes: d.votes,
-        votes_count: 0,
+      r.data.result.forEach((d, idx) => {
+        list.push({
+          name: d.owner,
+          rank: idx + 1,
+          votes: d.votes,
+          votes_count: 0,
+        });
       });
-    });
 
-    lastInquiryDate = currDate;
-    lastWitnessData = list;
-    console.log("return inquiry data");
-    res.json(list);
-  });
+      lastInquiryDate = currDate;
+      lastWitnessData = list;
+      console.log("return inquiry data");
+      res.json(list);
+    })
+    .catch((err) => {
+      console.log(`router.get("/witnesses"`);
+      console.log(err);
+    });
 });
 
 router.get("/delegator/:account", function (req, res, next) {
@@ -58,21 +64,27 @@ router.get("/delegator/:account", function (req, res, next) {
     id: 1,
   };
 
-  axios.post(rpcUrl, params).then((r) => {
-    if (!r.data.result.length) return;
+  axios
+    .post(rpcUrl, params)
+    .then((r) => {
+      if (!r.data.result.length) return;
 
-    const list = [];
+      const list = [];
 
-    r.data.result.forEach((d, idx) => {
-      list.push({
-        delegator: d.delegatee,
-        vesting_shares: parseFloat(d.vesting_shares.split(" ")[0]),
-        delegation_date: d.min_delegation_time,
+      r.data.result.forEach((d, idx) => {
+        list.push({
+          delegator: d.delegatee,
+          vesting_shares: parseFloat(d.vesting_shares.split(" ")[0]),
+          delegation_date: d.min_delegation_time,
+        });
       });
-    });
 
-    res.json(list);
-  });
+      res.json(list);
+    })
+    .catch((err) => {
+      console.log(`router.get("/delegator"`);
+      console.log(err);
+    });
 });
 
 module.exports = router;
